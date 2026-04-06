@@ -1,1 +1,531 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>Sensi-FF</title>
 
+  <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FF5722',
+            secondary: '#FF8A65',
+            panel: 'rgba(13, 16, 22, 0.88)',
+            darkbg: '#07090d',
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+          },
+          boxShadow: {
+            neon: '0 0 18px rgba(255, 87, 34, 0.35)',
+            soft: '0 10px 30px rgba(0, 0, 0, 0.35)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background:
+        radial-gradient(circle at top, rgba(255, 87, 34, 0.18), transparent 30%),
+        linear-gradient(180deg, #05070b 0%, #090c12 100%);
+      color: #fff;
+    }
+
+    .glass-panel {
+      background: rgba(10, 14, 20, 0.9);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 138, 101, 0.18);
+      box-shadow:
+        0 0 0 1px rgba(255, 138, 101, 0.08),
+        0 0 24px rgba(255, 87, 34, 0.12),
+        0 18px 40px rgba(0, 0, 0, 0.45);
+    }
+
+    .neon-border {
+      border: 1px solid rgba(255, 138, 101, 0.28);
+      box-shadow:
+        0 0 0 1px rgba(255, 138, 101, 0.06),
+        inset 0 0 10px rgba(255, 138, 101, 0.04);
+    }
+
+    .active-glow {
+      background: linear-gradient(180deg, #FF8A65, #FF5722);
+      color: white !important;
+      border-color: transparent !important;
+      box-shadow:
+        0 0 18px rgba(255, 87, 34, 0.32),
+        0 8px 18px rgba(255, 87, 34, 0.18);
+    }
+
+    .slider-track {
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .slider-fill {
+      height: 100%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #FF8A65, #FF5722);
+      box-shadow: 0 0 14px rgba(255, 87, 34, 0.35);
+      transition: width 0.35s ease;
+    }
+
+    .value-glow {
+      text-shadow: 0 0 10px rgba(255, 138, 101, 0.45);
+    }
+
+    .card-soft {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+
+    .input-shell {
+      border: 1px solid rgba(255, 138, 101, 0.35);
+      box-shadow:
+        0 0 0 1px rgba(255, 138, 101, 0.08),
+        0 0 18px rgba(255, 138, 101, 0.10);
+    }
+
+    .input-shell:focus-within {
+      border-color: rgba(255, 138, 101, 0.7);
+      box-shadow:
+        0 0 0 1px rgba(255, 138, 101, 0.15),
+        0 0 20px rgba(255, 138, 101, 0.18);
+    }
+
+    .search-btn {
+      min-width: 78px;
+      border: 1px solid rgba(255, 138, 101, 0.45);
+      background: linear-gradient(180deg, rgba(255, 138, 101, 0.20), rgba(255, 87, 34, 0.16));
+      box-shadow:
+        0 0 14px rgba(255, 138, 101, 0.18),
+        inset 0 0 10px rgba(255, 138, 101, 0.06);
+    }
+
+    .search-btn:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 0 18px rgba(255, 138, 101, 0.24),
+        inset 0 0 12px rgba(255, 138, 101, 0.08);
+    }
+
+    .search-btn:active {
+      transform: translateY(0);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 font-sans">
+  <main class="w-full max-w-2xl glass-panel rounded-2xl p-5 md:p-8 relative overflow-hidden">
+    <div class="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl pointer-events-none"></div>
+    <div class="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-secondary/10 blur-3xl pointer-events-none"></div>
+
+    <div class="relative z-10">
+    <div class="mb-4">
+        <h1 class="text-2xl md:text-3xl font-bold mt-4 text-center">Sensibilidad Pro</h1>
+        <p class="text-sm md:text-base text-white/60 mt-2">
+          Selecciona tu modo, el nivel de sensi y luego pulsa la lupa para generar.
+        </p>
+      </div>
+
+      <!-- DPI -->
+      <section class="grid grid-cols-2 gap-3 mb-6">
+        <button
+          id="dpiOnBtn"
+          class="dpi-btn active-glow flex items-center justify-center gap-2 py-3 px-4 font-bold rounded-xl transition-all neon-border"
+          data-dpi="on"
+        >
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 111.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"></path>
+          </svg>
+          CON DPI
+        </button>
+
+        <button
+          id="dpiOffBtn"
+          class="dpi-btn flex items-center justify-center gap-2 py-3 px-4 font-bold rounded-xl transition-all neon-border bg-black/30 text-white/80 hover:bg-white/5"
+          data-dpi="off"
+        >
+          <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" clip-rule="evenodd" d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"></path>
+          </svg>
+          SIN DPI
+        </button>
+      </section>
+
+      <!-- Search -->
+     <section class="mb-3">
+        <div class="flex gap-3">
+          <div class="input-shell flex-1 flex items-center bg-black/35 rounded-xl px-4">
+            <div class="pr-3 text-secondary">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+            </div>
+
+            <input
+              id="deviceInput"
+              type="text"
+              placeholder="Huawei Nova 5T"
+              class="w-full bg-transparent border-none focus:ring-0 text-white placeholder:text-white/30 font-semibold py-4 px-0"
+              maxlength="50"
+            />
+          </div>
+
+         <button
+            type="button"
+            id="generateBtn"
+            class="search-btn rounded-xl px-4 flex items-center justify-center text-secondary transition-all"
+            aria-label="Generar sensibilidad"
+            title="Generar sensibilidad"
+            >
+            <svg class="h-7 w-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.4"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+        </div>
+
+        <p id="message" class="text-sm text-secondary mt-3 min-h-[20px]"></p>
+      </section>
+
+      <!-- Sliders -->
+  <section class="space-y-4 mb-8">
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">◎</span> General
+            </div>
+            <span id="generalText" class="text-sm font-bold value-glow">135</span>
+          </div>
+          <div class="slider-track"><div id="generalFill" class="slider-fill" style="width: 67.5%;"></div></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">⦿</span> Mira de punto rojo
+            </div>
+            <span id="redDotText" class="text-sm font-bold value-glow">145</span>
+          </div>
+          <div class="slider-track"><div id="redDotFill" class="slider-fill" style="width: 72.5%;"></div></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">✧</span> Mira 2X
+            </div>
+            <span id="scope2Text" class="text-sm font-bold value-glow">124</span>
+          </div>
+          <div class="slider-track"><div id="scope2Fill" class="slider-fill" style="width: 62%;"></div></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">⌖</span> Mira 4X
+            </div>
+            <span id="scope4Text" class="text-sm font-bold value-glow">134</span>
+          </div>
+          <div class="slider-track"><div id="scope4Fill" class="slider-fill" style="width: 67%;"></div></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">⊘</span> Mira de francotirador
+            </div>
+            <span id="sniperText" class="text-sm font-bold value-glow">76</span>
+          </div>
+          <div class="slider-track"><div id="sniperFill" class="slider-fill" style="width: 76%;"></div></div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex justify-between items-center">
+            <div class="flex items-center gap-2 text-sm font-bold uppercase tracking-tight">
+              <span class="text-secondary">↺</span> Botón de cámara 360
+            </div>
+            <span id="cameraText" class="text-sm font-bold value-glow">144</span>
+          </div>
+          <div class="slider-track"><div id="cameraFill" class="slider-fill" style="width: 72%;"></div></div>
+        </div>
+      </section>
+
+      <!-- Stats -->
+      <section class="grid grid-cols-2 gap-4 mb-7">
+        <div class="flex items-center gap-4 card-soft p-4 rounded-2xl">
+          <div class="relative flex items-center justify-center w-12 h-12 rounded-full bg-gradient-to-tr from-orange-900 to-orange-500 border border-orange-300/30 shadow-neon">
+            <svg class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="text-[10px] text-white/45 font-bold uppercase tracking-[0.25em]">Botón</div>
+            <div id="buttonText" class="text-2xl font-bold">42%</div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 card-soft p-4 rounded-2xl">
+          <div class="relative flex items-center justify-center w-12 h-12 rounded-xl bg-black/40 border border-secondary/30 shadow-neon">
+            <svg class="h-6 w-6 text-secondary" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" clip-rule="evenodd"
+                d="M10 2a1 1 0 011 1v1.323l3.954 1.582 1.599-.8a1 1 0 01.894 1.79l-1.233.616 1.738 5.42a1 1 0 01-.285 1.05l-3.293 3.293a1 1 0 01-1.414 0l-3.293-3.293a1 1 0 01-.285-1.05l1.738-5.42-1.233-.617a1 1 0 01.894-1.788l1.599.799L9 4.323V3a1 1 0 011-1zm-1 8.274l-.81 2.519L10 14.586l1.81-1.81-.81-2.519h-2z"></path>
+            </svg>
+          </div>
+          <div>
+            <div class="text-[10px] text-white/45 font-bold uppercase tracking-[0.25em]">DPI</div>
+            <div id="dpiText" class="text-2xl font-bold">448</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Presets -->
+      <section class="grid grid-cols-3 gap-2">
+        <button
+          class="preset-btn flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-black/20 text-xs font-bold tracking-[0.22em] uppercase hover:bg-white/5 transition-all"
+          data-preset="low"
+        >
+          <span class="w-1.5 h-1.5 bg-white rounded-full opacity-50"></span>
+          Baja
+        </button>
+
+        <button
+        class="preset-btn active-glow flex items-center justify-center gap-2 py-3 rounded-xl text-xs font-bold tracking-[0.22em] uppercase transition-all"
+        data-preset="medium"
+        >
+        <div class="flex gap-0.5">
+            <div class="w-1 h-2 bg-white rounded-sm"></div>
+            <div class="w-1 h-3 bg-white rounded-sm"></div>
+        </div>
+        Media
+        </button>
+
+        <button
+          class="preset-btn flex items-center justify-center gap-2 py-3 rounded-xl border border-white/10 bg-black/20 text-xs font-bold tracking-[0.22em] uppercase hover:bg-white/5 transition-all"
+          data-preset="high"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M13 10V3L4 14h7v7l9-11h-7z" />
+          </svg>
+          Alta
+        </button>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const state = {
+      dpiMode: 'on',
+      preset: 'medium'
+    };
+
+    const message = document.getElementById('message');
+    const deviceInput = document.getElementById('deviceInput');
+    const generateBtn = document.getElementById('generateBtn');
+
+    const dpiButtons = document.querySelectorAll('.dpi-btn');
+    const presetButtons = document.querySelectorAll('.preset-btn');
+
+    const elements = {
+      generalText: document.getElementById('generalText'),
+      redDotText: document.getElementById('redDotText'),
+      scope2Text: document.getElementById('scope2Text'),
+      scope4Text: document.getElementById('scope4Text'),
+      sniperText: document.getElementById('sniperText'),
+      cameraText: document.getElementById('cameraText'),
+      buttonText: document.getElementById('buttonText'),
+      dpiText: document.getElementById('dpiText'),
+
+      generalFill: document.getElementById('generalFill'),
+      redDotFill: document.getElementById('redDotFill'),
+      scope2Fill: document.getElementById('scope2Fill'),
+      scope4Fill: document.getElementById('scope4Fill'),
+      sniperFill: document.getElementById('sniperFill'),
+      cameraFill: document.getElementById('cameraFill')
+    };
+
+    const baseRanges = {
+      low: {
+        general: [100, 130],
+        redDot: [100, 160],
+        scope2: [100, 160],
+        scope4: [100, 160],
+        sniper: [35, 55],
+        camera: [95, 120],
+        button: [35, 45],
+        dpi: [390, 430]
+      },
+      medium: {
+        general: [130, 150],
+        redDot: [125, 170],
+        scope2: [110, 170],
+        scope4: [100, 170],
+        sniper: [55, 75],
+        camera: [125, 150],
+        button: [40, 52],
+        dpi: [430, 520]
+      },
+      high: {
+        general: [150, 198],
+        redDot: [155, 195],
+        scope2: [140, 195],
+        scope4: [130, 195],
+        sniper: [70, 90],
+        camera: [150, 190],
+        button: [48, 62],
+        dpi: [520, 720]
+      }
+    };
+
+    const dpiModifiers = {
+      on: {
+        general: [5, 15],
+        redDot: [5, 12],
+        scope2: [4, 10],
+        scope4: [4, 10],
+        sniper: [2, 6],
+        camera: [5, 12],
+        button: [0, 3]
+      },
+      off: {
+        general: [-5, 4],
+        redDot: [-5, 4],
+        scope2: [-6, 3],
+        scope4: [-6, 3],
+        sniper: [-4, 2],
+        camera: [-5, 4],
+        button: [-2, 2]
+      }
+    };
+
+    dpiButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        state.dpiMode = button.dataset.dpi;
+        updateDpiButtons();
+      });
+    });
+
+    presetButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        state.preset = button.dataset.preset;
+        updatePresetButtons();
+      });
+    });
+
+    generateBtn.addEventListener('click', generateSensitivity);
+
+    deviceInput.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        generateSensitivity();
+      }
+    });
+
+    function updateDpiButtons() {
+      dpiButtons.forEach(button => {
+        const isActive = button.dataset.dpi === state.dpiMode;
+        button.classList.toggle('active-glow', isActive);
+        button.classList.toggle('bg-black/30', !isActive);
+        button.classList.toggle('text-white/80', !isActive);
+      });
+    }
+
+    function updatePresetButtons() {
+      presetButtons.forEach(button => {
+        const isActive = button.dataset.preset === state.preset;
+        button.classList.toggle('active-glow', isActive);
+        button.classList.toggle('border', !isActive);
+        button.classList.toggle('border-white/10', !isActive);
+        button.classList.toggle('bg-black/20', !isActive);
+      });
+    }
+
+    function randomBetween(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function getModifiedValue(key, preset, dpiMode, maxLimit) {
+      const [baseMin, baseMax] = baseRanges[preset][key];
+      const [modMin, modMax] = dpiModifiers[dpiMode][key];
+      const baseValue = randomBetween(baseMin, baseMax);
+      const modifier = randomBetween(modMin, modMax);
+      return clamp(baseValue + modifier, 0, maxLimit);
+    }
+
+    function setBar(fillElement, value, maxValue) {
+      const percentage = (value / maxValue) * 100;
+      fillElement.style.width = percentage + '%';
+    }
+
+    function generateSensitivity() {
+      const deviceName = deviceInput.value.trim();
+
+      if (!deviceName) {
+        message.textContent = 'Escribe el nombre del dispositivo primero.';
+        deviceInput.focus();
+        return;
+      }
+
+      const general = getModifiedValue('general', state.preset, state.dpiMode, 200);
+      const redDot = getModifiedValue('redDot', state.preset, state.dpiMode, 200);
+      const scope2 = getModifiedValue('scope2', state.preset, state.dpiMode, 200);
+      const scope4 = getModifiedValue('scope4', state.preset, state.dpiMode, 200);
+      const sniper = getModifiedValue('sniper', state.preset, state.dpiMode, 100);
+      const camera = getModifiedValue('camera', state.preset, state.dpiMode, 200);
+      const button = getModifiedValue('button', state.preset, state.dpiMode, 100);
+
+      let dpiValue = 'OFF';
+      if (state.dpiMode === 'on') {
+        const [dpiMin, dpiMax] = baseRanges[state.preset].dpi;
+        dpiValue = randomBetween(dpiMin, dpiMax);
+      }
+
+      elements.generalText.textContent = general;
+      elements.redDotText.textContent = redDot;
+      elements.scope2Text.textContent = scope2;
+      elements.scope4Text.textContent = scope4;
+      elements.sniperText.textContent = sniper;
+      elements.cameraText.textContent = camera;
+      elements.buttonText.textContent = button + '%';
+      elements.dpiText.textContent = dpiValue;
+
+      setBar(elements.generalFill, general, 200);
+      setBar(elements.redDotFill, redDot, 200);
+      setBar(elements.scope2Fill, scope2, 200);
+      setBar(elements.scope4Fill, scope4, 200);
+      setBar(elements.sniperFill, sniper, 100);
+      setBar(elements.cameraFill, camera, 200);
+
+      const presetText =
+        state.preset === 'low' ? 'baja' :
+        state.preset === 'medium' ? 'media' : 'alta';
+
+      const dpiText = state.dpiMode === 'on' ? 'con DPI' : 'sin DPI';
+      message.textContent = `Sensi ${presetText} generada para ${deviceName} (${dpiText}).`;
+    }
+
+    updateDpiButtons();
+    updatePresetButtons();
+  </script>
+</body>
+</html>
